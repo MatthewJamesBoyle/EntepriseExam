@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+          "-//Hibernate/Hibernate Mapping DTD//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+	<class name="uk.boyle.examprep.Country" table="countries">
+		<id name="id" column="id">
+			<generator class="identity" />
+		</id>
+		<property name="ISO3166" column="ISO3166" />
+		<property name="name" column="name" />
+		<set name="hasSites" table="drug_trials">
+			<key column="site_id" />
+			<one-to-many class="uk.boyle.examprep.Site" />
+		</set>
+		<set name="requiredDocuments" table="countries_documents">
+			<key column="country_id" not-null="true" />
+			<many-to-many class="uk.boyle.examprep.Document" column="document_id" />
+		</set>
+	</class>
+
+	<class name="uk.boyle.examprep.Document" table="documents">
+		<id name="id" column="id">
+			<generator class="identity" />
+		</id>
+		<property name="name" column="name" />
+		<set name="requiredIn" table="countries_documents">
+			<key column="document_id" />
+			<many-to-many class="uk.boyle.examprep.Country" column="country_id" />
+		</set>
+		<set name="trials" table="document_trials">
+			<key column="document_id" />
+			<many-to-many class="uk.boyle.examprep.Trial" column="trial_id" />
+		</set>
+	</class>
+
+	<class name="uk.boyle.examprep.Drug" table="drugs">
+		<id name="id" column="id">
+			<generator class="identity" />
+		</id>
+		<property name="name" column="name" />
+		<property name="description" column="description" />
+		<set name="trials" table="drug_trials">
+			<key column="drug_id" />
+			<many-to-many class="uk.boyle.examprep.Trial" column="trial_id" />
+		</set>
+		<set name="distributedVisits">
+			<key column="visit_id" />
+			<one-to-many class="uk.boyle.examprep.Visit" />
+		</set>
+
+	</class>
+
+	<class name="uk.boyle.examprep.Patient" table="patients">
+		<id name="id" column="id">
+			<generator class="identity" />
+		</id>
+		<property name="firstName" column="first_name" />
+		<property name="lastName" column="last_name" />
+		<property name="gender" column="GENDER">
+			<type name="org.hibernate.type.EnumType">
+				<param name="enumClass">uk.boyle.examprep.Gender</param>
+				<param name="useNamed">true</param>
+			</type>
+		</property>
+		<property name="dateRegistered" length="20">
+			<column name="date_registered" default="now()" />
+		</property>
+		<property name="dob" column="date_of_birth" />
+		<set name="visits">
+			<key column="visit_id" />
+			<one-to-many class="uk.boyle.examprep.Visit" />
+		</set>
+		<many-to-one name="registeredAt" column="site_id" />
+		<many-to-one name="trial" column="trial_id" />
+
+	</class>
+
+	<class name="uk.boyle.examprep.Site" table="sites">
+		<id name="id" column="id">
+			<generator class="identity" />
+		</id>
+		<property name="name" column="name" />
+
+		<many-to-one name="residesIn" column="site_id" cascade="all"
+			not-null="true" />
+
+
+		<set name="registeredPatients">
+			<key column="site_id" />
+			<one-to-many class="uk.boyle.examprep.Patient" />
+		</set>
+
+
+		<set name="registeredFor" table="trial_at_Site">
+			<key column="site_id" />
+			<many-to-many class="uk.boyle.examprep.Trial" column="trial_id" />
+		</set>
+	</class>
+
+	<class name="uk.boyle.examprep.Trial" table="trials">
+		<id name="id" column="id">
+			<generator class="identity" />
+		</id>
+		<property name="name" column="name" />
+		<set name="drugs" table="drug_trials">
+			<key column="trial_id" />
+			<many-to-many class="uk.boyle.examprep.Drug" column="drug_id" />
+		</set>
+		<set name="patients">
+			<key column="trial_id" />
+			<one-to-many class="uk.boyle.examprep.Patient" />
+		</set>
+		<set name="registeredAt" table="trial_at_Site">
+			<key column="trial_id" />
+			<many-to-many class="uk.boyle.examprep.Site" column="site_id" />
+		</set>
+
+		<set name="documents" table="document_trials">
+			<key column="trial_id" />
+			<many-to-many class="uk.boyle.examprep.Document" column="document_id" />
+		</set>
+
+	</class>
+
+
+	<class name="uk.boyle.examprep.Visit" table="visits">
+		<id name="id" column="id">
+			<generator class="identity" />
+		</id>
+		<many-to-one name="patient" column="patient_id" />
+		<property name="dose" column="dose" />
+		<property name="date" column="date" />
+		<many-to-one name="drug" column="drug" />
+
+
+
+
+
+	</class>
+
+
+</hibernate-mapping>
